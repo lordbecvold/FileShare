@@ -1,100 +1,100 @@
-<?php 
-    // Send headers 
-    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
-    header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
-    header("Cache-Control: no-store, no-cache, must-revalidate"); 
-    header("Cache-Control: post-check=0, pre-check=0", false); 
-    header("Pragma: no-cache"); 
- 
-    // Include config component
-    require_once("../config.php");
+<div class="file-upload-form">
+<p class="upload-form-title">File upload</p>
 
-    // Init config 
-    $targetDir = $config["storage-path"]; 
-    $cleanupTargetDir = $config["cleanup-target-dir"]; 
-    $maxFileAge = $config["max-file-age"]; 
- 
-    // Create target dir (if not exist)
-    if (!file_exists($targetDir)) { 
-        @mkdir($targetDir); 
-    } 
+<div class="form-group">
+    <input type="file" class="form-control" id="file-upload" title="cc">
+</div>
 
-    // Create dir with date (if not exist)
-    if (!file_exists($targetDir.date("d_m_Y"))) { 
-        @mkdir($targetDir.date("d_m_Y")); 
-    } 
+<div id="fileList"></div>
 
-    // Get a file name 
-    if (isset($_REQUEST["name"])) { 
-        $fileName = $_REQUEST["name"]; 
-    } elseif (!empty($_FILES)) { 
-        $fileName = $_FILES["file"]["name"]; 
-    } else { 
-        $fileName = uniqid("file_"); 
-    } 
- 
-    // Build filee path
-    $filePath = $targetDir . date("d_m_Y") . DIRECTORY_SEPARATOR . $fileName; 
- 
-    // Chunking might be enabled 
-    $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0; 
-    $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0; 
- 
-    // Remove old temp files     
-    if ($cleanupTargetDir) { 
-        if (!is_dir($targetDir.date("d_m_Y")) || !$dir = opendir($targetDir.date("d_m_Y"))) { 
-            die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}'); 
-        } 
- 
-        while (($file = readdir($dir)) !== false) { 
-            $tmpfilePath = $targetDir . date("d_m_Y") . DIRECTORY_SEPARATOR . $file; 
- 
-            // If temp file is current file proceed to the next 
-            if ($tmpfilePath == "{$filePath}.part") { 
-                continue; 
-            } 
- 
-            // Remove temp file if it is older than the max age and is not the current file 
-            if (preg_match('/\.part$/', $file) && (filemtime($tmpfilePath) < time() - $maxFileAge)) { 
-                @unlink($tmpfilePath); 
-            } 
-        } 
-        closedir($dir); 
-    }     
- 
- 
-    // Open temp file 
-    if (!$out = @fopen("{$filePath}.part", $chunks ? "ab" : "wb")) { 
-        die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}'); 
-    } 
- 
-    if (!empty($_FILES)) { 
-        if ($_FILES["file"]["error"] || !is_uploaded_file($_FILES["file"]["tmp_name"])) { 
-            die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');   
-        } 
- 
-        // Read binary input stream and append it to temp file 
-        if (!$in = @fopen($_FILES["file"]["tmp_name"], "rb")) { 
-            die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}'); 
-        } 
-    } else {     
-        if (!$in = @fopen("php://input", "rb")) { 
-            die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}'); 
-        } 
-    } 
- 
-    while ($buff = fread($in, 4096)) { 
-        fwrite($out, $buff); 
-    } 
- 
-    @fclose($out); 
-    @fclose($in); 
- 
-    // Check if file has been uploaded 
-    if (!$chunks || $chunk == $chunks - 1) { 
-        // Strip the temp .part suffix off  
-        rename("{$filePath}.part", $filePath); 
-    } 
- 
-    // Return Success response 
-    die('{"jsonrpc" : "2.0", "result" : {"status": 200, "message": "The file has been uploaded successfully!"}}'); 
+<div class="progress"></div>   
+
+<div class="form-group">
+    <a id="uploadBtn" href="javascript:;" class="btn btn-success">Upload</a>
+</div>
+</div>
+
+<script src="assets/js/plupload.full.min.js"></script>
+        <script>
+
+            // generate random int for create storage key
+            var random_int = Math.random().toString(10).slice(2);
+
+            // uploader properties
+            var uploader = new plupload.Uploader({
+                runtimes : 'html5,flash,silverlight,html4',
+                browse_button : 'file-upload', 
+                url : 'upload_YZjcoaX443.php?key='+random_int,
+                flash_swf_url : 'plupload/js/Moxie.swf',
+                silverlight_xap_url : 'plupload/js/Moxie.xap',
+                multi_selection: false,
+                
+                // allow files spcification
+                filters : {
+
+                    // max file size in mb
+                    max_file_size : '1024mb',
+
+                    // allowed files formates
+                    mime_types: [
+                        {title : "Image files", extensions : "jpg,jpeg,gif,png"},
+                        {title : "Video files", extensions : "mp4,avi,mpeg,mpg,mov,wmv"},
+                        {title : "Zip files", extensions : "zip,7z,rar,tar.gz,tar"},
+                        {title : "Document files", extensions : "pdf,docx,xlsx,txt,ppt,pptx"}
+                    ]
+                },
+
+                // main upload functions
+                init: {
+                    PostInit: function() {
+                        document.getElementById('fileList').innerHTML = '';
+
+                        document.getElementById('uploadBtn').onclick = function() {
+
+                            // check if file inputed
+                            if (uploader.files.length < 1) {
+                              
+                                // return false upload
+                                return false;
+                            } else {
+
+                                // start upload inputed file
+                                uploader.start();
+                                return false;
+                            }
+                        };
+                    },
+
+                    // print inpited file name
+                    FilesAdded: function(up, files) {
+                        plupload.each(files, function(file) {
+                            document.getElementById('fileList').innerHTML += '<div class="color-yellow" id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+                        });
+                    },
+
+                    // upload process (update progress)
+                    UploadProgress: function(up, file) {                        
+                        // update progress
+                        document.querySelector(".progress").innerHTML = '<span class="progress-bar-fill" style="width: '+file.percent+'%;"">'+file.percent+'%</span>';
+
+                        // update progress title
+                        document.querySelector("#title").innerHTML = file.percent+'% -> ' + file.name;
+                    },
+                    
+                    // file uploaded final function
+                    FileUploaded: function(up, file, result) {
+                    
+                        // redirect to download page
+                        window.location.replace("?process=download&file="+file.name+"&key="+random_int);
+                    },
+
+                    // file upload error print
+                    Error: function(up, err) {
+                        document.getElementById('statusResponse').innerHTML = '<p style="color:#EA4335;">Error #' + err.code + ': ' + err.message + '</p>';
+                    }
+                }
+            });
+
+            // Initialize Plupload uploader
+            uploader.init();
+        </script>

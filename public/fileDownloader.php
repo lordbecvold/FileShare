@@ -1,32 +1,45 @@
-<?php 
-    // require config
-    require_once("../config.php");
+<?php
 
-    // get app name
-    $appName = $config["app-name"]
-?>
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta content="<?php echo $config["description"]; ?>" name="description">
-        <meta content="<?php $config["keywords"]; ?>" name="keywords">
-        <link rel="icon" type="image/x-icon" href="assets/img/icon.png">
-        <link href="assets/css/main.css" rel="stylesheet">
-        <title id="title"><?php echo $appName; ?></title>
-    </head>
-    <body>
-        <header>
-            <h2><?php echo $appName; ?></h2>
-        </header>
-        
-        <main>
-            <?php echo $_GET["file"] . " - " . $_GET["date"]; ?>
-        </main>
+function formatBytes($bytes) {
+    if ($bytes > 0) {
+        $i = floor(log($bytes) / log(1024));
+        $sizes = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        return sprintf('%.02F', round($bytes / pow(1024, $i),1)) * 1 . ' ' . @$sizes[$i];
+    } else {
+        return 0;
+    }
+}
 
-        <footer>
-            <h1>Made with ❤️ by <a class="lukas-link" href="http://becvold.xyz/">Lukáš Bečvář</a></h1>
-        </footer>
-    </body>
-</html>
+                // check if component included
+                if (basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"])) {
+                    die(header('Location: /?process=upload'));
+                } else {
+
+                    // check if gets found
+                    if (empty($_GET["file"]) or empty($_GET["key"])) {
+                        die(header('Location: /?process=upload'));
+                    } else {
+                        
+                        // build file path
+                        $file = $config["storage-path"].$_GET["key"]."/".$_GET["file"];
+
+                        // get file size
+                        if (file_exists($file)) {
+
+                            // get file size
+                            $size = filesize($file);
+
+                        } else {
+
+                            // redirect to not found file
+                            header('Location: /?process=notFound&file='.$_GET["file"]);
+                        }
+
+                        // print download box
+                        echo '<div class="downloader-box">';
+                            echo '<p class="downloader-name">'.$_GET["file"].' (<span class="file-size">'.formatBytes($size).'</span>)</p>';
+                            echo '<a class="downloader-button" href="downloader.php?key='.$_GET["key"].'&file='.$_GET["file"].'">Download</a>';
+                        echo '</div>';
+                    }
+                } 
+            ?>
