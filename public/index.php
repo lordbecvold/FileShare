@@ -20,8 +20,7 @@
             <h2><a class="header-link" href="/"><?php echo $appName; ?></a></h2>
         </header>
         <main>
-        <?php
-
+        <?php // components list
             // get process name
             if (!empty($_GET["process"])) {
                 $process = $_GET["process"];
