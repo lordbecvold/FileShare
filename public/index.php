@@ -32,15 +32,15 @@
 
             // use upload function
             if ($process == "upload") {
-                include_once("fileUploader.php");
+                include_once("../components/fileUploader.php");
 
             // use download function
             } elseif ($process == "download") {
-                include_once("fileDownloader.php");
+                include_once("../components/fileDownloader.php");
 
             // use not found page
             } elseif ($process == "notFound") {
-                include_once("fileNotFound.php");
+                include_once("../components/fileNotFound.php");
 
             // redirect to default process if process not found
             } else {
