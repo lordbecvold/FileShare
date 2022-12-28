@@ -35,11 +35,17 @@
                 header('Location: /?process=notFound&file='.$_GET["file"]);
             }
 
-            // print download box
-            echo '<div class="downloader-box">';
-                echo '<p class="downloader-name">'.$_GET["file"].' (<span class="file-size">'.formatBytes($size).'</span>)</p>';
-                echo '<a class="downloader-button" href="downloader.php?key='.$_GET["key"].'&file='.$_GET["file"].'">Download</a>';
-            echo '</div>';
+
+            // file security check
+            if (str_contains($_GET["file"], '/') or str_contains($_GET["key"], '/')) {
+                die('{"jsonrpc" : "2.0", "error" : {"code": 107, "message": "Filed to get download file, but good try :)"}, "id" : "id"}'); 
+            } else {
+                // print download box
+                echo '<div class="downloader-box">';
+                    echo '<p class="downloader-name">'.$_GET["file"].' (<span class="file-size">'.formatBytes($size).'</span>)</p>';
+                    echo '<a class="downloader-button" href="downloader.php?key='.$_GET["key"].'&file='.$_GET["file"].'">Download</a>';
+                echo '</div>';
+            }
         }
     } 
 ?>

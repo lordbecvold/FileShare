@@ -24,24 +24,30 @@
     // Build file path
     $file = $config["storage-path"]."$key/$name";
 
-    // check if file exist
-    if (file_exists($file)) {
+    // check if path is secure
+    if (str_contains($name, '/') or str_contains($key, '/')) {
+        die('{"jsonrpc" : "2.0", "error" : {"code": 107, "message": "Filed to get download file, but good try :)"}, "id" : "id"}'); 
 
-        // set downloader headers
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . basename($file) . '"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($file));
-    
-        // read file
-        readfile($file);
-    } 
+    } else {
+        // check if file exist
+        if (file_exists($file)) {
 
-    // redirect to file not found
-    else {
-        header('Location: /?process=notFound&file='.$name);
+            // set downloader headers
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file));
+        
+            // read file
+            readfile($file);
+        } 
+
+        // redirect to file not found
+        else {
+            header('Location: /?process=notFound&file='.$name);
+        }
     }
 ?>
